@@ -1,0 +1,53 @@
+LAYOUT (TEXT="OpenId Demo")
+GRID
+{
+[l000|f000                             ][f006         ]
+[l001|f001                             ][             ]
+[l002|f002                             ][             ]
+[l003|f003                             ][             ]
+[l004|f004                             ][             ]
+[l005|f005                             ][             ]
+[l007|f007                             ][             ]
+[l008|f008                             ]
+[l009|f009   ]
+[l010|f010                             ]
+[txt                                                                 ]
+[                                                                    ]
+[                                                                    ]
+[                                                                    ]
+[                                                                    ]
+[                                                                    ]
+[                                                                    ]
+[                                                                    ]
+[                                                                    ]
+[                                                                    ]
+}
+END -- GRID
+
+ATTRIBUTES
+
+LABEL l000 : l000, TEXT="Email:", JUSTIFY=RIGHT;
+LABEL l001 : l001, TEXT="Family:", JUSTIFY=RIGHT;
+LABEL l002 : l002, TEXT="Given:", JUSTIFY=RIGHT;
+LABEL l003 : l003, TEXT="IDP Issuer:", JUSTIFY=RIGHT;
+LABEL l004 : l004, TEXT="IDP Token EP:", JUSTIFY=RIGHT;
+LABEL l005 : l005, TEXT="Name:", JUSTIFY=RIGHT;
+
+LABEL l007 : l007, TEXT="Profile:", JUSTIFY=RIGHT;
+LABEL l008 : l008, TEXT="sub:", JUSTIFY=RIGHT;
+LABEL l009 : l009, TEXT="Token Expires:", JUSTIFY=RIGHT;
+LABEL l010 : l010, TEXT="UserInfo EP:", JUSTIFY=RIGHT;
+
+f000 = FORMONLY.email;
+f001 = FORMONLY.family;
+f002 = FORMONLY.given;
+f003 = FORMONLY.idp_issuer;
+f004 = FORMONLY.idp_token_endpoint;
+f005 = FORMONLY.name;
+IMAGE f006 = FORMONLY.picture, STYLE="noborder";
+f007 = FORMONLY.profile;
+f008 = FORMONLY.sub;
+f009 = FORMONLY.token_expires_in;
+f010 = FORMONLY.userinfo_endpoint;
+
+TEXTEDIT txt = FORMONLY.m_txt, STRETCH=BOTH, FONTPITCH=FIXED;
