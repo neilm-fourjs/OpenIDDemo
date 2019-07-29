@@ -1,5 +1,5 @@
 
-CONSTANT C_OPENIDLOGIN = "https://generodemo.hopto.org/g/ua/r/OpenIdLogin"
+CONSTANT C_OPENIDLOGIN = "https://generodemos.dynu.net/g/ua/r/OpenIdLogin"
 CONSTANT C_OPENID = "#OpenId#"
 TYPE t_oidc RECORD
 		email STRING,

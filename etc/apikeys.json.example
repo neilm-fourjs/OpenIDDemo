@@ -1,0 +1,5 @@
+{
+	"client": "<YOUR CLIENTID>",
+	"secret": "<YOUR SECRET>",
+	"endpoint": "https://<YOUR SERVER>/g/ws/r/njmOpenIDConnectServiceProvider/oauth2callback"
+}

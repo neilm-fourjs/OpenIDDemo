@@ -105,6 +105,7 @@
   </Group>
   <Group id="1857545499" label="OpenIdDemo" language="Genero" targetDirectory="$(ProjectDir)/binDemo">
     <Library binaryName="etc" id="-1631299012" label="etc">
+      <File filePath="etc/apikeys.json"/>
       <File filePath="etc/default.4st"/>
     </Library>
     <Library binaryName="gas" excludeFromBuild="true" id="-133379718" label="gas">

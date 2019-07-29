@@ -1,7 +1,4 @@
 
--- Client ID: XXXXX.apps.googleusercontent.com
--- Client Secret: XXXX
--- https://console.developers.google.com/apis/credentials/oauthclient/XXXXX.apps.googleusercontent.com?project=openiddemo-218216
 IMPORT util
 IMPORT security
 IMPORT os
@@ -9,7 +6,6 @@ IMPORT FGL rest_sec
 
 CONSTANT C_IDP_URL = "https://accounts.google.com"
 CONSTANT C_IDP_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"
-CONSTANT C_REDIRECT_URI = "https://generodemo.hopto.org/g/ws/r/njmOpenIDConnectServiceProvider/oauth2callback"
 
 TYPE t_oidc RECORD
 		email STRING,
@@ -25,15 +21,18 @@ TYPE t_oidc RECORD
 		userinfo_endpoint STRING
 	END RECORD
 DEFINE m_txt STRING
-DEFINE m_secretId, m_clientId, m_refresh_token STRING
+DEFINE m_secretId, m_clientId, m_endPoint STRING
 DEFINE m_oidc t_oidc
 MAIN
 
-	LET m_secretId = "XXXX"
-	LET m_clientId = "XXXXX.apps.googleusercontent.com"
-
 	OPEN FORM frm FROM "OpenIdDemo"
 	DISPLAY FORM frm
+
+	CALL getAPIkeys("../etc/apikeys.json") RETURNING m_clientId, m_secretId, m_endPoint
+	IF m_clientId IS NULL OR m_secretId IS NULL OR m_endPoint IS NULL THEN
+		CALL fgl_winMessage("Error",m_txt,"exclamation")
+		EXIT PROGRAM
+	END IF
 
 --	CALL dumpEnv()
 --	CALL setOidcFromEnv()
@@ -69,7 +68,7 @@ FUNCTION getToken()
 	DEFINE l_url, l_state, l_result STRING
 	LET l_state = security.RandomGenerator.CreateUUIDString()
 	LET l_url = SFMT( "%1?client_id=%2&response_type=code&scope=email&state=%3&redirect_uri=%4",
-										C_IDP_ENDPOINT , m_clientId, l_state, C_REDIRECT_URI)
+										C_IDP_ENDPOINT , m_clientId, l_state, m_endPoint)
 	DISPLAY "URL:",l_url
 	CALL rest_sec.get(l_url,NULL) RETURNING l_stat, l_result
 	IF l_result MATCHES "<!DOCTYPE html>*" OR l_result MATCHES "\n<!DOCTYPE html>*" THEN
@@ -92,7 +91,7 @@ FUNCTION refresh_token()
 		SFMT( "client_secret=%1&client_id=%2&scope=email", m_secretId, m_clientId )
 	CALL rest_sec.post( C_IDP_ENDPOINT, l_req_data, NULL ) RETURNING l_stat, l_res_data
 	TRY
-		CALL util.JSON.parse(l_res_data, l_refresh_rec )
+		CALL util.JSON.parse(l_res_data, l_refresh_rec ) 
 		CALL disp("Refresh New Token:"||l_refresh_rec.access_token)
 	CATCH
 		CALL disp("JSON Parse failed!")
@@ -166,3 +165,30 @@ FUNCTION dumpEnv()
 	CALL disp("------------------------------")
 END FUNCTION
 --------------------------------------------------------------------------------
+FUNCTION getAPIkeys( l_file STRING ) RETURNS( STRING, STRING, STRING )
+	DEFINE rec RECORD
+			client STRING,
+			secret STRING,
+			endpoint STRING
+		END RECORD
+	DEFINE l_json TEXT
+	LOCATE l_json IN MEMORY
+	TRY
+		CALL l_json.readFile(l_file)
+	CATCH
+		LET m_txt =  SFMT( "Failed to read %1!", l_file )
+		DISPLAY m_Txt
+		RETURN NULL, NULL, NULL
+	END TRY
+	TRY
+		CALL util.JSONObject.parse(l_json).toFGL(rec)
+	CATCH
+		LET m_txt = SFMT( "Failed to parse '%1' content '%2' ", l_file, NVL(l_json,"NULL") )
+		DISPLAY m_txt
+		RETURN NULL, NULL, NULL
+	END TRY
+	IF rec.client IS NULL THEN LET m_txt = "Client is NULL" END IF
+	IF rec.secret IS NULL THEN LET m_txt = "Secret is NULL" END IF
+	IF rec.endpoint IS NULL THEN LET m_txt = "Endpoint is NULL" END IF
+	RETURN rec.client, rec.secret, rec.endpoint
+END FUNCTION
