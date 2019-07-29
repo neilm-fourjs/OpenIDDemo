@@ -14,7 +14,7 @@
 <APPLICATION Parent="ws.default"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:noNamespaceSchemaLocation="http://www.4js.com/ns/gas/3.00/cfextws.xsd">       
-		<RESOURCE Id="res.path.openid" Source="INTERNAL">$(res.deployment.path)</RESOURCE>
+    <RESOURCE Id="res.path.openid" Source="INTERNAL">$(res.deployment.path)</RESOURCE>
     <EXECUTION>    
       <ENVIRONMENT_VARIABLE Id="FGLPROFILE">$(res.path.openid)/res/fglprofile$(res.path.separator)$(res.path.openid)/res/configuration</ENVIRONMENT_VARIABLE>
       <ENVIRONMENT_VARIABLE Id="FGLSQLDEBUG">3</ENVIRONMENT_VARIABLE>

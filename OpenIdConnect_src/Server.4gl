@@ -53,8 +53,8 @@ MAIN
   END FOR
 
   # Initialize log
-  CALL Logs.LOG_INIT(p_debug,p_path,"OIDC.log")
-  CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"Server","Main","Started")
+  CALL Logs.LOG_INIT(p_debug,p_path,"njmOIDC.log")
+  CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"Server","Main","NJM:Started")
 
   # Initialize DB
   IF NOT DBase.DBConnect() THEN
@@ -64,10 +64,10 @@ MAIN
 
   # Detect JGAS and adapt BASE url accordingly
   IF fgl_getenv("FGLJGAS") IS NOT NULL THEN
-    LET HTTPHelper.C_OIDC_PATH = "/ws/r/OpenIDConnectServiceProvider/"
+    LET HTTPHelper.C_OIDC_PATH = "/ws/r/njmOpenIDConnectServiceProvider/"
     CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"Server","Main","JGAS detected")
   ELSE
-    LET HTTPHelper.C_OIDC_PATH = "/ws/r/services/OpenIDConnectServiceProvider/"
+    LET HTTPHelper.C_OIDC_PATH = "/ws/r/njmOpenIDConnectServiceProvider/"
   END IF
 
   # Initialize connection layer

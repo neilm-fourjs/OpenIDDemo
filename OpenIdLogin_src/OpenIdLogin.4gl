@@ -5,7 +5,7 @@ IMPORT util
 
 MAIN
 	DEFINE l_oidc t_oidc
-	DEFINE l_store STRING
+	DEFINE l_store, l_user STRING
 
 	CALL ui.Interface.loadStyles("OpenIdLogin")
 
@@ -24,12 +24,14 @@ MAIN
 	LET l_oidc.token_expires_in  = fgl_getEnv("OIDC_TOKEN_EXPIRES_IN")
 	LET l_oidc.userinfo_endpoint  = fgl_getEnv("OIDC_USERINFO_ENDPOINT")
 
+	LET l_user = NVL(l_oidc.name,l_oidc.email)
+
 	IF l_oidc.email IS NULL THEN
 --		DISPLAY "Invalid Login" TO name
 		DISPLAY "homer-doh_Login.png" TO img
 		CALL dumpEnv()
 	ELSE
-		DISPLAY "Welcome "||NVL(l_oidc.name,"Unknown User!") TO name
+		DISPLAY "Welcome "||NVL(l_user,"Unknown User!") TO name
 		DISPLAY l_oidc.picture TO img
 		DISPLAY "Login Okay:",l_oidc.email
 	END IF

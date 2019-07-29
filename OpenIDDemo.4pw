@@ -73,7 +73,7 @@
       <File filePath="OpenIdConnect_src/Logs.4gl"/>
     </Library>
     <Library binaryName="gas" excludeFromBuild="true" id="519656192" label="gas">
-      <File filePath="gas/njmOpenIDConnectServiceProvider.xcf"/>
+      <File filePath="OpenIdConnect_src/njmOpenIDConnectServiceProvider.xcf"/>
     </Library>
     <Application binaryName="ImportOAuth" commandLineArguments="-list" id="592927465" label="ImportOAuth">
       <File filePath="OpenIdConnect_src/ImportOAuth.4gl"/>
@@ -147,15 +147,15 @@
     <Package binaryName="OpenIdDemo" dependencies="1156422428,519656192" id="-296556948" label="OpenIdDemo" platform="Genero Application Server">
       <DynamicProperty name="packageId" value="OpenIdDemo"/>
       <DynamicProperty name="packageLabel" value="OpenIdDemo"/>
-      <Directory includedFiles="*.42?" label="bin" recursive="false" sourceDirectory="$(ProjectDir)/binDemo"/>
-      <Directory label="etc" sourceDirectory="$(ProjectDir)/etc"/>
+      <Directory destinationDirectory="$(RootDir)/bin" includedFiles="*.42?" label="bin" recursive="false" sourceDirectory="$(ProjectDir)/binDemo"/>
+      <Directory destinationDirectory="$(RootDir)/etc" label="etc" sourceDirectory="$(ProjectDir)/etc"/>
       <Directory includedFiles="OpenIdDemo.xcf,OpenIdDemo2.xcf" label="gas" recursive="false" sourceDirectory="$(ProjectDir)/gas"/>
     </Package>
     <Package binaryName="OpenIdLogin" dependencies="519656192,-262077376,-102635928" id="-122737856" label="OpenIdLogin" platform="Genero Application Server">
       <DynamicProperty name="packageId" value="OpenIdLogin"/>
       <DynamicProperty name="packageLabel" value="OpenIdLogin"/>
-      <Directory label="bin" sourceDirectory="$(ProjectDir)/OpenIdLogin_bin"/>
-      <Directory includedFiles="*.4st" label="etc" sourceDirectory="$(ProjectDir)/OpenIdLogin_src"/>
+      <Directory destinationDirectory="$(RootDir)/bin" label="bin" sourceDirectory="$(ProjectDir)/OpenIdLogin_bin"/>
+      <Directory destinationDirectory="$(RootDir)/etc" includedFiles="*.4st" label="etc" sourceDirectory="$(ProjectDir)/OpenIdLogin_src"/>
       <Directory includedFiles="OpenIdLogin.xcf" label="gas" recursive="false" sourceDirectory="$(ProjectDir)/OpenIdLogin_src"/>
       <Directory includedFiles="*.png" label="pics" sourceDirectory="$(ProjectDir)/OpenIdLogin_src"/>
     </Package>
