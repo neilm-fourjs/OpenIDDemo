@@ -1,10 +1,10 @@
 #
 # FOURJS_START_COPYRIGHT(U,2015)
 # Property of Four Js*
-# (c) Copyright Four Js 2015, 2018. All Rights Reserved.
+# (c) Copyright Four Js 2015, 2019. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
-#
+# 
 # Four Js and its suppliers do not warrant or guarantee that these samples
 # are accurate and suitable for your purposes. Their inclusion is purely for
 # information purposes only.
@@ -299,9 +299,9 @@ FUNCTION CheckTokenValidity(pub_id,idp,token)
       END IF
     END IF
   END IF
-  IF id_token.claims.scopes IS NOT NULL THEN
-    # Return scope names
-    RETURN TRUE, id_token.claims.sub, id_token.claims.scopes.getKeys()
+  IF id_token.claims.scopes.getLength() > 0 THEN
+    # Return scope names (aka roles)
+    RETURN TRUE, id_token.claims.sub, id_token.claims.scopes
   ELSE
     RETURN TRUE, id_token.claims.sub, NULL
   END IF
@@ -333,6 +333,7 @@ FUNCTION RetrieveUserInfo(idp,token)
         LET req = com.HttpRequest.Create(idp.userinfo_endpoint)
         CALL req.setHeader("Authorization","Bearer "||token.access_token)
       END IF
+      CALL req.setHeader("Accept","application/json")
       CALL req.setConnectionTimeOut(C_PROFILE_TIMEOUT)
       CALL req.doRequest()
       LET resp = req.getResponse()

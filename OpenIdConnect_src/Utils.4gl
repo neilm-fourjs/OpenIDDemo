@@ -1,7 +1,7 @@
 #
 # FOURJS_START_COPYRIGHT(U,2015)
 # Property of Four Js*
-# (c) Copyright Four Js 2015, 2018. All Rights Reserved.
+# (c) Copyright Four Js 2015, 2019. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
 # 
@@ -15,6 +15,7 @@ IMPORT COM
 IMPORT SECURITY
 IMPORT XML
 
+  
 
 FUNCTION StartsWith(str,s)
   DEFINE  str   STRING

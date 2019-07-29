@@ -1,7 +1,7 @@
 #
 # FOURJS_START_COPYRIGHT(U,2018)
 # Property of Four Js*
-# (c) Copyright Four Js 2018, 2018. All Rights Reserved.
+# (c) Copyright Four Js 2018, 2019. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
 # 
@@ -150,3 +150,4 @@ FUNCTION ShowUsage()
   DISPLAY "       -logout  URL     : Optional logout end point URL"
   EXIT PROGRAM (1)
 END FUNCTION
+

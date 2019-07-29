@@ -8,8 +8,8 @@
 		<DELEGATE service="njmOpenIDConnectServiceProvider" >
 			<IDP>https://accounts.google.com</IDP>
 			<SCOPE>email</SCOPE>
-			<CLIENT_PUBLIC_ID>533588121618-c00p53sjm6vbse9l6eqhgs5hdpgqoktv.apps.googleusercontent.com</CLIENT_PUBLIC_ID>
-			<CLIENT_SECRET_ID>7lT-uKZ5-PQiTQMagGlZyD5V</CLIENT_SECRET_ID>
+			<CLIENT_PUBLIC_ID>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com</CLIENT_PUBLIC_ID>
+			<CLIENT_SECRET_ID>xxxxxxxxxxxxxxxxxxxxxxxx</CLIENT_SECRET_ID>
 			<AUTHORIZATION>fglrun AccessProgram</AUTHORIZATION>			
 		</DELEGATE>
 	</EXECUTION>

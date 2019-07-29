@@ -1,10 +1,10 @@
 #
 # FOURJS_START_COPYRIGHT(U,2015)
 # Property of Four Js*
-# (c) Copyright Four Js 2015, 2018. All Rights Reserved.
+# (c) Copyright Four Js 2015, 2019. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
-#
+# 
 # Four Js and its suppliers do not warrant or guarantee that these samples
 # are accurate and suitable for your purposes. Their inclusion is purely for
 # information purposes only.
@@ -147,6 +147,10 @@ FUNCTION ProcessOAuth2Callback(req, baseURL, idp, sess, app_url, code)
 
   # Retrieve mandatory subject identifier
   LET identifier = base.Application.getResourceEntry("oidc.oauth.subject.identifier")
+  IF identifier.equalsIgnoreCase("<none>") THEN
+    # Skip subject
+    LET identifier = NULL
+  END IF
 
   # OAuth2
   CALL OIDConnect.ClientSendCode(idp.*,baseURL||HTTPHelper.C_OIDC_PATH||HTTPHelper.C_OIDC_REDIRECT,code,sess.pub_id,sess.secret_id) RETURNING ok,json
@@ -171,13 +175,15 @@ FUNCTION ProcessOAuth2Callback(req, baseURL, idp, sess, app_url, code)
       WHEN "id_token"
         LET token.id_token = json.get(n)
       OTHERWISE
-        IF json.getType(n)=="OBJECT" THEN
-          LET child = json.get(n)
-          IF child.has(identifier) AND idp.userinfo_endpoint IS NULL THEN
-            # Decode json token as attributes and to get user id from token
-            CALL OIDConnect.JsonObjectToAttributes(child, attrs)
-          END IF
-        END  IF
+        IF identifier IS NOT NULL THEN
+          IF json.getType(n)=="OBJECT" THEN
+            LET child = json.get(n)
+            IF child.has(identifier) AND idp.userinfo_endpoint IS NULL THEN
+              # Decode json token as attributes and to get user id from token
+              CALL OIDConnect.JsonObjectToAttributes(child, attrs)
+            END IF
+          END  IF
+        END IF
     END CASE
   END FOR
 
@@ -201,10 +207,17 @@ FUNCTION ProcessOAuth2Callback(req, baseURL, idp, sess, app_url, code)
 
   END IF
 
-  # Retrieve user subject
-  LET ind = attrs.search("name",identifier)
-  IF ind>0 THEN
-    LET subject = attrs[ind].value
+  # Handle user identifier
+  IF identifier IS NULL THEN
+    # skip identifier step
+    LET subject = "<none>"
+    CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"SPManager","ProcessOAuth2Callback","Skip subject")
+  ELSE
+    # Retrieve user subject
+    LET ind = attrs.search("name",identifier)
+    IF ind>0 THEN
+      LET subject = attrs[ind].value
+    END IF
   END IF
 
   IF subject IS NULL THEN

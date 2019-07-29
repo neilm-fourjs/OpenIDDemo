@@ -1,10 +1,10 @@
 #
 # FOURJS_START_COPYRIGHT(U,2015)
 # Property of Four Js*
-# (c) Copyright Four Js 2015, 2018. All Rights Reserved.
+# (c) Copyright Four Js 2015, 2019. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
-#
+# 
 # Four Js and its suppliers do not warrant or guarantee that these samples
 # are accurate and suitable for your purposes. Their inclusion is purely for
 # information purposes only.
@@ -14,7 +14,6 @@
 IMPORT COM
 IMPORT UTIL
 IMPORT Security
-
 IMPORT FGL Logs
 IMPORT FGL DBase
 IMPORT FGL JWT
@@ -54,8 +53,8 @@ MAIN
   END FOR
 
   # Initialize log
-  CALL Logs.LOG_INIT(p_debug,p_path,"myOIDC.log")
-  CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"Server","Main", SFMT("Started FGLWSDEBUG=%1 FGLSQLDEBUG=%2", fgl_getEnv("FGLWSDEBUG"),fgl_getEnv("FGLSQLDEBUG")))
+  CALL Logs.LOG_INIT(p_debug,p_path,"OIDC.log")
+  CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"Server","Main","Started")
 
   # Initialize DB
   IF NOT DBase.DBConnect() THEN
@@ -65,10 +64,10 @@ MAIN
 
   # Detect JGAS and adapt BASE url accordingly
   IF fgl_getenv("FGLJGAS") IS NOT NULL THEN
-    LET HTTPHelper.C_OIDC_PATH = "/ws/r/njmOpenIDConnectServiceProvider/"
+    LET HTTPHelper.C_OIDC_PATH = "/ws/r/OpenIDConnectServiceProvider/"
     CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"Server","Main","JGAS detected")
   ELSE
-    LET HTTPHelper.C_OIDC_PATH = "/ws/r/njmOpenIDConnectServiceProvider/"
+    LET HTTPHelper.C_OIDC_PATH = "/ws/r/services/OpenIDConnectServiceProvider/"
   END IF
 
   # Initialize connection layer
@@ -219,7 +218,8 @@ FUNCTION Delegate(req, baseURL, query)
 
     IF originalURL.getIndexOf(C_RESUME_URL,1)>1 THEN
       # Resume URL
-      CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"Server","Delegate Resume URL",originalURL)
+      CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"Server","Resume URL",originalURL)
+
       CALL SPManager.HasAccess(req, originalURL, query) RETURNING ok, _found, attrs
       IF ok THEN
         CALL SPManager.Resume(req)
@@ -228,20 +228,16 @@ FUNCTION Delegate(req, baseURL, query)
       END IF
 
     ELSE
-
       CALL SPManager.HasAccess(req, originalURL, query) RETURNING ok, _found, attrs
       IF ok THEN
         # ACCESS IS GRANTED
-    	  CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"Server","Delegate URL OK",originalURL)
         CALL SPManager.StartProxy(req, HTTPHelper.BuildQueryEncodedURL(originalURL, query) , attrs)
       ELSE
         # ACCESS DENIED
         IF NOT _found THEN
           # NOT COOKIE FOUND
-    	  	CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"Server","Delegate URL DENIED StartAuthentication",originalURL)
           CALL SPManager.StartAuthentication(req, baseURL, HTTPHelper.BuildQueryEncodedURL(originalURL, query) )
         ELSE
-    	  	CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"Server","Delegate URL DENIED FORBID",originalURL)
           CALL SPManager.ForbidAccess(req)
         END IF
       END IF

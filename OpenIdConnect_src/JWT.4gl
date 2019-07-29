@@ -1,7 +1,7 @@
 #
 # FOURJS_START_COPYRIGHT(U,2015)
 # Property of Four Js*
-# (c) Copyright Four Js 2015, 2018. All Rights Reserved.
+# (c) Copyright Four Js 2015, 2019. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
 # 
@@ -32,11 +32,6 @@ PUBLIC TYPE JWTHeaderType RECORD
   x5t 	STRING  # The "x5t" (x.509 certificate thumbprint) header parameter provides a base64url encoded SHA-256 thumbprint (a.k.a. digest) of the DER encoding of an X.509 certificate that can be used to match a certificate. This header parameter is OPTIONAL. 
 END RECORD
 
-PUBLIC TYPE JWTScopeRulesType DYNAMIC ARRAY OF RECORD
-    met STRING,
-    uri STRING
-END RECORD
-
 PUBLIC TYPE JWTClaimsType RECORD
   sub STRING,     # Subject
   exp INTEGER,    # Expiration
@@ -49,7 +44,7 @@ PUBLIC TYPE JWTClaimsType RECORD
   typ STRING,     # The typ (type) claim is used to declare a type for the contents of this JWT Claims Set. The typ value is case sensitive. This claim is OPTIONAL.
   azp STRING,     # Authorized party - the party to which the ID Token was issued.
   at_hash STRING,  # Access Token hash value
-  scopes DICTIONARY OF JWTScopeRulesType
+  scopes DYNAMIC ARRAY OF STRING
 END RECORD
 
 PUBLIC TYPE JWTType RECORD

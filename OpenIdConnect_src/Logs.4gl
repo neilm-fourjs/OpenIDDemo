@@ -1,7 +1,7 @@
 #
 # FOURJS_START_COPYRIGHT(U,2015)
 # Property of Four Js*
-# (c) Copyright Four Js 2015, 2018. All Rights Reserved.
+# (c) Copyright Four Js 2015, 2019. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
 # 
@@ -23,8 +23,6 @@ PUBLIC CONSTANT C_LOG_SQLERROR  = 5
 
 PRIVATE DEFINE pid  INTEGER
 PRIVATE DEFINE level STRING 
-
-DEFINE c base.channel
 
 PRIVATE FUNCTION mkdir_recursive(path)
     DEFINE path STRING
@@ -56,14 +54,14 @@ PUBLIC FUNCTION LOG_INIT(lvl, path, f)
         DISPLAY "ERROR: Unable to create log file in ",fullpath
         EXIT PROGRAM(1)
     END IF
-    CALL my_startlog(fullpath||"/"||f)
+    CALL startlog(fullpath||"/"||f)
   ELSE
-    CALL my_startlog(f)
+    CALL startlog(f)
   END IF
   IF level IS NOT NULL THEN
-    CALL my_errorlog("MSGLOG : "||pid||" - [Logs] \"INIT\" with level='"||level||"' done")
+    CALL errorlog("MSG  : "||pid||" - [Logs] \"INIT\" with level='"||level||"' done")
   ELSE
-    CALL my_errorlog("MSGLOG : "||pid||" - [Logs] \"INIT\" done")
+    CALL errorlog("MSG  : "||pid||" - [Logs] \"INIT\" done")
   END IF
 END FUNCTION
 
@@ -83,30 +81,21 @@ PUBLIC FUNCTION LOG_EVENT(cat,class,ev,msg)
   END IF
   CASE cat
     WHEN C_LOG_ERROR
-      CALL my_errorlog("ERROR  : "||pid||" - ["||class||"] \""||ev||"\" "||msg)
+      CALL errorlog("ERROR  : "||pid||" - ["||class||"] \""||ev||"\" "||msg)
     WHEN C_LOG_DEBUG
       IF level=="DEBUG" THEN
-        CALL my_errorlog("DEBUG  : "||pid||" - ["||class||"] \""||ev||"\" "||msg)
+        CALL errorlog("DEBUG  : "||pid||" - ["||class||"] \""||ev||"\" "||msg)
       END IF
     WHEN C_LOG_SQLERROR
-      CALL my_errorlog("SQLERR : "||pid||" - ["||class||"] \""||ev||"\" "||msg)
+      CALL errorlog("SQLERR : "||pid||" - ["||class||"] \""||ev||"\" "||msg)
     WHEN C_LOG_MSG
       IF level=="MSG" OR level=="DEBUG" THEN 
-        CALL my_errorlog("MSGLOG : "||pid||" - ["||class||"] \""||ev||"\" "||msg)
+        CALL errorlog("MSGLOG : "||pid||" - ["||class||"] \""||ev||"\" "||msg)
       END IF 
     WHEN C_LOG_ACCESS
-      CALL my_errorlog("ACCESS : "||pid||" - ["||class||"] \""||ev||"\" "||msg)
+      CALL errorlog("ACCESS : "||pid||" - ["||class||"] \""||ev||"\" "||msg)
   END CASE  
 END FUNCTION
---------------------------------------------------------------------------------
-FUNCTION my_startlog( l_file STRING )
-	LET c = base.Channel.create()
-	CALL c.openFile(l_file,"a+")
-	CALL c.writeLine(CURRENT||":Log Started")
-END FUNCTION
---------------------------------------------------------------------------------
-FUNCTION my_errorlog( l_msg STRING )
-	DISPLAY CURRENT||":"||l_msg.trim()
-	CALL c.writeLine(CURRENT||":"||l_msg.trim())
-END FUNCTION
+  
+
   
