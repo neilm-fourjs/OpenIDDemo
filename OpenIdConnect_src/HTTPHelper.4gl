@@ -12,7 +12,7 @@
 #
 
 IMPORT com
-IMPORT XML 
+IMPORT xml 
 IMPORT util
 
 IMPORT FGL WSHelper

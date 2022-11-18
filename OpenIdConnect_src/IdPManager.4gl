@@ -12,7 +12,7 @@
 #
 
 IMPORT com
-IMPORT XML
+IMPORT xml
 IMPORT FGL Logs
 IMPORT FGL Discovery
 

@@ -1,5 +1,6 @@
 
 IMPORT util
+IMPORT os
 
 &include "OpenIdLogin.inc"
 
@@ -29,14 +30,17 @@ MAIN
 	IF l_oidc.email IS NULL THEN
 --		DISPLAY "Invalid Login" TO name
 		DISPLAY "homer-doh_Login.png" TO img
-		CALL dumpEnv()
+--		CALL dumpEnv()
 	ELSE
 		DISPLAY "Welcome "||NVL(l_user,"Unknown User!") TO name
 		DISPLAY l_oidc.picture TO img
 		DISPLAY "Login Okay:",l_oidc.email
 	END IF
 
+	CALL dumpEnv() -- just for testing.
+
 	LET l_store = util.JSONObject.fromFGL( l_oidc ).toString()
+	CALL logIt( l_store )
 	CALL ui.Interface.frontCall("localStorage", "setItem", ["openid", l_store], [])
 
 	MENU "OpenIdLogin"
@@ -46,6 +50,29 @@ MAIN
 	END MENU
 
 END MAIN
+--------------------------------------------------------------------------------
+-- yyyy/mm/dd hh:mm:ss fffff
+-- 1234567890123456789012345
+FUNCTION logIt(l_str STRING)
+	DEFINE l_file STRING
+	DEFINE l_txt TEXT
+	DEFINE l_dte CHAR(25)
+	LET l_dte = CURRENT
+
+	DISPLAY l_str
+	LET l_file = os.path.join("..","logs")
+	IF NOT os.path.exists(l_file) THEN
+		IF NOT os.path.mkdir(l_file) THEN
+			DISPLAY "Log file dir failed to create!"
+			RETURN
+		END IF
+	END IF
+	DISPLAY "Log to: ",l_file
+	LET l_file = os.path.join(l_file, SFMT("%1%2%3_%4%5%6.log", l_dte[1,4], l_dte[6,7], l_dte[9,10], l_dte[12,13], l_dte[15,16], l_dte[18,19]))
+
+	LOCATE l_txt IN FILE l_file
+	LET l_txt = l_str
+END FUNCTION
 --------------------------------------------------------------------------------
 FUNCTION dumpEnv()
 	DEFINE c base.channel

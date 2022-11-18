@@ -11,8 +11,8 @@
 # FOURJS_END_COPYRIGHT
 #
 
-IMPORT COM
-IMPORT Util
+IMPORT com
+IMPORT util
 
 CONSTANT GOOGLE_ACCOUNTS = "https://accounts.google.com"
 

@@ -15,9 +15,9 @@
 # Module implementing JSON Web Token specification
 #
 
-IMPORT Util
-IMPORT Security
-IMPORT XML
+IMPORT util
+IMPORT security
+IMPORT xml
 IMPORT FGL Utils
 IMPORT FGL Logs
 IMPORT FGL JWK

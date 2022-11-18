@@ -14,8 +14,8 @@
 #
 # Module implementing the OpenIDConnect protocol
 #
-IMPORT COM
-IMPORT Util
+IMPORT com
+IMPORT util
 IMPORT FGL Logs
 IMPORT FGL IdPManager
 IMPORT FGL Access

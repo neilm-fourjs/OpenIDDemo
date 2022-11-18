@@ -15,9 +15,9 @@
 # Module implementing JSON Web Key specification
 #
 
-IMPORT COM
-IMPORT XML
-IMPORT Util
+IMPORT com
+IMPORT xml
+IMPORT util
 IMPORT FGL Logs
 IMPORT FGL IdPManager
 

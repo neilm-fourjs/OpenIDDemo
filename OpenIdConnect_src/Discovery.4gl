@@ -14,8 +14,8 @@
 #
 # Module implementing OpenID Connect Discovery 1.0
 #
-IMPORT COM
-IMPORT Util
+IMPORT com
+IMPORT util
 IMPORT FGL Logs
 IMPORT FGL HTTPHelper
 
