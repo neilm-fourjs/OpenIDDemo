@@ -1,7 +1,7 @@
 #
 # FOURJS_START_COPYRIGHT(U,2015)
 # Property of Four Js*
-# (c) Copyright Four Js 2015, 2019. All Rights Reserved.
+# (c) Copyright Four Js 2015, 2023. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
 # 
@@ -11,7 +11,6 @@
 # FOURJS_END_COPYRIGHT
 #
 
-IMPORT com
 IMPORT security
 IMPORT FGL Logs
 
@@ -19,6 +18,9 @@ PRIVATE CONSTANT C_VALIDITY = INTERVAL (5) MINUTE TO MINUTE
 
 PRIVATE
 TYPE UUIDType VARCHAR(36)
+
+PRIVATE
+TYPE URLType VARCHAR(2048)
 
 PRIVATE
 TYPE ExpirationType DATETIME YEAR TO SECOND
@@ -35,7 +37,7 @@ TYPE ExpirationType DATETIME YEAR TO SECOND
 #
 PUBLIC
 FUNCTION CreateRelayState(url, sess_uuid)
-  DEFINE  url       VARCHAR(255)
+  DEFINE  url       URLType
   DEFINE  sess_uuid UUIDType
   DEFINE  uuid      UUIDType
   DEFINE  expires   ExpirationType
@@ -62,7 +64,7 @@ PUBLIC
 FUNCTION CheckRelayState(p_uuid)
   DEFINE  p_uuid      UUIDType
   DEFINE  now         ExpirationType
-  DEFINE  p_url       VARCHAR(255)
+  DEFINE  p_url       URLType
   DEFINE  p_sess_uuid UUIDType
   CALL Logs.LOG_EVENT(Logs.C_LOG_DEBUG,"RelayState","CheckRelayState",NULL)
   LET now = CURRENT

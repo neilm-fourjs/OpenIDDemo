@@ -1,7 +1,7 @@
 #
 # FOURJS_START_COPYRIGHT(U,2015)
 # Property of Four Js*
-# (c) Copyright Four Js 2015, 2019. All Rights Reserved.
+# (c) Copyright Four Js 2015, 2023. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
 # 
@@ -33,7 +33,7 @@ MAIN
   LET req = com.HttpRequest.Create(GOOGLE_ACCOUNTS||"/register")
   CALL req.setMethod("POST")
   CALL req.setHeader("Content-Type","application/json")
-  CALL req.doTextRequest(Util.JSON.stringify(regReq))
+  CALL req.doTextRequest(util.JSON.stringify(regReq))
   LET resp = req.getResponse()
   IF resp.getStatusCode() == 200 THEN
     DISPLAY "OK :",resp.getTextResponse()

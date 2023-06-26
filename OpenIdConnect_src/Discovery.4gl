@@ -1,7 +1,7 @@
 #
 # FOURJS_START_COPYRIGHT(U,2015)
 # Property of Four Js*
-# (c) Copyright Four Js 2015, 2019. All Rights Reserved.
+# (c) Copyright Four Js 2015, 2023. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
 # 
@@ -17,7 +17,6 @@
 IMPORT com
 IMPORT util
 IMPORT FGL Logs
-IMPORT FGL HTTPHelper
 
 PUBLIC TYPE OpenIDMetadataType RECORD
     issuer STRING, # REQUIRED. URL using the https scheme with no query or fragment component that the OP asserts as its Issuer Identifier. If Issuer discovery is supported (see Section 2), this value MUST be identical to the issuer value returned by WebFinger. This also MUST be identical to the iss Claim value in ID Tokens issued from this Issuer.   
@@ -85,7 +84,7 @@ PRIVATE FUNCTION GetOpenIDConfiguration(base_url)
       CALL util.JSON.parse(res.getTextResponse(),ret)
     END IF
   CATCH
-    CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"Discovery","GetOpenIDConfiguration","ERROR :"||STATUS)
+    CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"Discovery","GetOpenIDConfiguration","ERROR :"||status)
   END TRY
   RETURN ret.*
 END FUNCTION

@@ -1,7 +1,7 @@
 #
 # FOURJS_START_COPYRIGHT(U,2015)
 # Property of Four Js*
-# (c) Copyright Four Js 2015, 2019. All Rights Reserved.
+# (c) Copyright Four Js 2015, 2023. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
 # 
@@ -43,8 +43,9 @@ PUBLIC TYPE JWTClaimsType RECORD
   jti STRING,     # (JWT ID) claim provides a unique identifier for the JWT. The identifier value MUST be assigned in a manner that ensures that there is a negligible probability that the same value will be accidentally assigned to a different data object. The jti claim can be used to prevent the JWT from being replayed. The jti value is case sensitive. This claim is OPTIONAL.
   typ STRING,     # The typ (type) claim is used to declare a type for the contents of this JWT Claims Set. The typ value is case sensitive. This claim is OPTIONAL.
   azp STRING,     # Authorized party - the party to which the ID Token was issued.
-  at_hash STRING,  # Access Token hash value
-  scopes DYNAMIC ARRAY OF STRING
+  at_hash STRING, # Access Token hash value
+  scope STRING,   # Space separated list of scopes (RFC8693)
+  scopes DYNAMIC ARRAY OF STRING # List of scopes as array
 END RECORD
 
 PUBLIC TYPE JWTType RECORD
@@ -60,6 +61,8 @@ PRIVATE FUNCTION CheckAlgo(head)
   CASE head.alg
     WHEN "RS256"
       RETURN TRUE
+    WHEN "RSA256"
+      RETURN TRUE
     WHEN "HS256"
       RETURN TRUE
     OTHERWISE
@@ -74,12 +77,12 @@ FUNCTION DecodeAndValidateCompactJWT(idp,str)
   DEFINE  ind,ind2  INTEGER
   DEFINE  ret       JWTType
   DEFINE  tmp       STRING
-  DEFINE  HEADER    STRING
+  DEFINE  header    STRING
   DEFINE  payload   STRING
   DEFINE  decoded   STRING
   DEFINE  data2Sign STRING
   DEFINE  signature STRING
-  DEFINE  KEY       xml.CryptoKey
+  DEFINE  key       xml.CryptoKey
   
   # Decode JWT Header
   LET ind = str.getIndexOf('.',1)
@@ -90,8 +93,8 @@ FUNCTION DecodeAndValidateCompactJWT(idp,str)
   
   # Decode Header
   LET header = str.subString(1,ind-1)
-  LET tmp = Utils.BASE64URL2BASE64(header)
-  LET decoded = Security.base64.ToStringWithCharset(tmp,"UTF-8")
+  LET tmp = Utils.Base64Url2Base64(header)
+  LET decoded = security.Base64.ToStringWithCharset(tmp,"UTF-8")
   CALL util.JSON.parse(decoded,ret.HEADER)
   
   # Ensure Genero support token Algo
@@ -111,19 +114,19 @@ FUNCTION DecodeAndValidateCompactJWT(idp,str)
 
   # Decode payload
   LET payload = str.subString(ind+1,ind2-1)
-  LET tmp = Utils.BASE64URL2BASE64(payload)
-  LET decoded = Security.base64.ToStringWithCharset(tmp,"UTF-8")
-  CALL Util.JSON.parse(decoded,ret.claims)
+  LET tmp = Utils.Base64Url2Base64(payload)
+  LET decoded = security.Base64.ToStringWithCharset(tmp,"UTF-8")
+  CALL util.JSON.parse(decoded,ret.claims)
   
   # Decode Signature (if any)
   LET data2Sign = header || "." || payload
   LET tmp = str.subString(ind2+1,str.getLength())
-  LET signature = Utils.BASE64URL2BASE64(tmp)
+  LET signature = Utils.Base64Url2Base64(tmp)
   
   # Check Signature validity
-  LET KEY = JWK.RetrieveIdpCryptoKey(idp.*,ret.HEADER.kid)
-  IF KEY IS NOT NULL THEN
-    IF xml.Signature.VerifyString(KEY,data2Sign,signature)==1 THEN
+  LET key = JWK.RetrieveIdpCryptoKey(idp.*,ret.HEADER.kid)
+  IF key IS NOT NULL THEN
+    IF xml.Signature.VerifyString(key,data2Sign,signature)==1 THEN
       RETURN ret.*
     END IF
   END IF
@@ -138,21 +141,21 @@ FUNCTION ValidateAtHash(token,str)
   DEFINE str    STRING
   DEFINE res    STRING
   DEFINE toCmp  STRING
-  DEFINE d      Security.Digest
+  DEFINE d      security.Digest
   
   CASE token.HEADER.alg.toUpperCase()
     WHEN "RS256"
-      LET d = Security.Digest.CreateDigest("SHA256")
+      LET d = security.Digest.CreateDigest("SHA256")
     WHEN "HS256"
-      LET d = Security.Digest.CreateDigest("SHA256")
+      LET d = security.Digest.CreateDigest("SHA256")
     WHEN "RS384"
-      LET d = Security.Digest.CreateDigest("SHA384")    
+      LET d = security.Digest.CreateDigest("SHA384")    
     WHEN "HS384"
-      LET d = Security.Digest.CreateDigest("SHA384")    
+      LET d = security.Digest.CreateDigest("SHA384")    
     WHEN "RS512"
-      LET d = Security.Digest.CreateDigest("SHA512")    
+      LET d = security.Digest.CreateDigest("SHA512")    
     WHEN "HS512"
-      LET d = Security.Digest.CreateDigest("SHA512")    
+      LET d = security.Digest.CreateDigest("SHA512")    
     OTHERWISE
       RETURN FALSE
   END CASE
@@ -163,7 +166,7 @@ FUNCTION ValidateAtHash(token,str)
   # Take left-most 128bits = 128/4 = 32
   LET res = res.subString(1,32)
   # Base64 encode if 
-  LET res = Security.Base64.FromHexBinary(res)
+  LET res = security.Base64.FromHexBinary(res)
   # Base64 Url encode it
   LET toCmp = Utils.Base642Base64Url(res)
   # Compare 

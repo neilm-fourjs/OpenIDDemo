@@ -1,7 +1,7 @@
 #
 # FOURJS_START_COPYRIGHT(U,2015)
 # Property of Four Js*
-# (c) Copyright Four Js 2015, 2019. All Rights Reserved.
+# (c) Copyright Four Js 2015, 2023. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
 # 
@@ -11,10 +11,8 @@
 # FOURJS_END_COPYRIGHT
 #
 
-IMPORT com
-IMPORT security
 IMPORT xml
-
+IMPORT FGL WSHelper
   
 
 FUNCTION StartsWith(str,s)
@@ -42,6 +40,35 @@ FUNCTION GetLastIndexOf(str,s)
   RETURN pos
 END FUNCTION
   
+FUNCTION BuildHTMLSubmit(html, url, queries)
+  DEFINE html STRING
+  DEFINE url  STRING
+  DEFINE queries STRING
+  DEFINE query WSHelper.WSQueryType
+  DEFINE doc xml.DomDocument
+  DEFINE node xml.DomNode
+  DEFINE child xml.DomNode
+  DEFINE ind INTEGER
+  DEFINE ret STRING
+  TRY
+    LET doc = xml.DomDocument.Create()
+    CALL doc.setFeature("auto-id-attribute",TRUE)
+    CALL doc.loadFromString(html)
+    LET node = doc.getElementById("form")
+    CALL node.setAttribute("action",url)
+    CALL WSHelper.SplitQueryString(queries) RETURNING query
+    FOR ind=1 TO query.getLength()
+      LET child = node.appendChildElement("input")
+      CALL child.setAttribute("type","hidden")
+      CALL child.setAttribute("name",query[ind].name)
+      CALL child.setAttribute("value",query[ind].value)
+    END FOR
+    LET ret = doc.saveToString()
+    RETURN ret
+  CATCH
+    RETURN NULL
+  END TRY
+END FUNCTION
 
 FUNCTION ReplaceString(str,_name,_value)
   DEFINE  str     STRING
@@ -186,9 +213,9 @@ PRIVATE FUNCTION ExtractTextFromDoc(doc,path)
   RETURN NULL
 END FUNCTION
 
-FUNCTION Base64Url2Base64(s)
+PUBLIC FUNCTION Base64Url2Base64(s)
   DEFINE  s   STRING
-  DEFINE  buf base.stringBuffer
+  DEFINE  buf base.StringBuffer
   LET buf = base.StringBuffer.create()
   CALL buf.append(s)
   CALL buf.replace("-","+",0)
@@ -204,9 +231,9 @@ FUNCTION Base64Url2Base64(s)
   RETURN buf.toString()
 END FUNCTION  
 
-FUNCTION Base642Base64Url(s)
+PUBLIC FUNCTION Base642Base64Url(s)
   DEFINE  s   STRING
-  DEFINE  buf base.stringBuffer
+  DEFINE  buf base.StringBuffer
   LET buf = base.StringBuffer.create()
   CALL buf.append(s)
   CALL buf.replace("+","-",0)
@@ -214,3 +241,4 @@ FUNCTION Base642Base64Url(s)
   CALL buf.replace("=",NULL,0)
   RETURN buf.toString()
 END FUNCTION
+

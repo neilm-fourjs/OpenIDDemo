@@ -1,7 +1,7 @@
 #
 # FOURJS_START_COPYRIGHT(U,2015)
 # Property of Four Js*
-# (c) Copyright Four Js 2015, 2019. All Rights Reserved.
+# (c) Copyright Four Js 2015, 2023. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
 # 
@@ -135,16 +135,16 @@ FUNCTION SendAuthenticationRequest(req,idp,redirect,client_pub_id,is_oauth2,scop
       IF is_oauth2 THEN
         # OAuth2
         IF scope IS NULL THEN
-          LET query = "?client_id="||Util.Strings.UrlEncode(client_pub_id)||"&response_type=code&redirect_uri="||Util.Strings.UrlEncode(redirect)||"&state="||uuid
+          LET query = "?client_id="||util.Strings.urlEncode(client_pub_id)||"&response_type=code&redirect_uri="||util.Strings.urlEncode(redirect)||"&state="||uuid
         ELSE
-          LET query = "?client_id="||Util.Strings.UrlEncode(client_pub_id)||"&response_type=code&scope="||Util.Strings.UrlEncode(scope)||"&redirect_uri="||Util.Strings.UrlEncode(redirect)||"&state="||uuid
+          LET query = "?client_id="||util.Strings.urlEncode(client_pub_id)||"&response_type=code&scope="||util.Strings.urlEncode(scope)||"&redirect_uri="||util.Strings.urlEncode(redirect)||"&state="||uuid
         END IF
       ELSE
         IF scope IS NULL THEN
           # openid scope is mandatory
-          LET query = "?client_id="||Util.Strings.UrlEncode(client_pub_id)||"&response_type=code&scope=openid&redirect_uri="||Util.Strings.UrlEncode(redirect)||"&state="||uuid
+          LET query = "?client_id="||util.Strings.urlEncode(client_pub_id)||"&response_type=code&scope=openid&redirect_uri="||util.Strings.urlEncode(redirect)||"&state="||uuid
         ELSE
-          LET query = "?client_id="||Util.Strings.UrlEncode(client_pub_id)||"&response_type=code&scope=openid%20"||Util.Strings.UrlEncode(scope)||"&redirect_uri="||Util.Strings.UrlEncode(redirect)||"&state="||uuid
+          LET query = "?client_id="||util.Strings.urlEncode(client_pub_id)||"&response_type=code&scope=openid%20"||util.Strings.urlEncode(scope)||"&redirect_uri="||util.Strings.urlEncode(redirect)||"&state="||uuid
         END IF
       END IF
       IF do_prompt THEN
@@ -198,7 +198,69 @@ FUNCTION ClientSendCode(idp, redirect, code, client_pub_id, client_secret_id)
       CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","ClientSendCode","HTTPCode("||resp.getStatusCode()||") : "||str)
     END IF
   CATCH
-    CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","ClientSendCode","Connection error code "||STATUS)
+    CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","ClientSendCode","Connection error code "||status)
+  END TRY
+  RETURN FALSE,NULL
+END FUNCTION
+
+#
+# Send OAuth2 code to IdP
+#  to get an access token
+#
+FUNCTION ClientSendCodeJson(idp, redirect, code, client_pub_id, client_secret_id)
+  DEFINE  idp                 IdPManager.IdPType
+  DEFINE  redirect            STRING
+  DEFINE  code                STRING
+  DEFINE  client_pub_id       STRING
+  DEFINE  client_secret_id    STRING
+  DEFINE  query               STRING
+  DEFINE  req                 com.HttpRequest
+  DEFINE  resp                com.HttpResponse
+  DEFINE  ret                 util.JSONObject
+  DEFINE  str                 STRING
+  DEFINE  json RECORD
+    grant_type STRING,
+    client_id STRING,
+    client_secret STRING,
+    redirect_uri STRING,
+    code STRING
+  END RECORD
+
+  CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"OIDConnect","ClientSendCodeJson",NULL)
+  TRY
+    LET json.grant_type="authorization_code"
+    LET json.code=code
+    LET json.redirect_uri=redirect
+    LET json.client_id=client_pub_id
+
+    #LET query = "grant_type=authorization_code&code="||code||"&redirect_uri="||redirect||"&client_id="||client_pub_id
+    IF client_secret_id IS NOT NULL THEN
+      # NOTICE : client_secret should not be sent according to OAuth2, but google wants it otherwise it fails
+      #LET query = query || "&client_secret="||client_secret_id
+      LET json.client_secret=client_secret_id
+    END IF
+
+    LET query = util.JSON.stringifyOmitNulls(json)
+    CALL Logs.LOG_EVENT(Logs.C_LOG_DEBUG,"OIDConnect","ClientSendCodeJson",sfmt("JSON request: %1", query))
+
+    LET req = com.HttpRequest.Create(idp.token_endpoint)
+    CALL req.setMethod("POST")
+    call req.setHeader("Content-Type", "application/json")
+    CALL req.doTextRequest(query)
+    LET resp = req.getResponse()
+    IF resp.getStatusCode() == 200 THEN
+      LET str = resp.getTextResponse()
+      LET ret = util.JSONObject.parse(str)
+      RETURN TRUE, ret
+    ELSE
+      LET str = resp.getTextResponse()
+      IF str IS NULL THEN
+        LET str = resp.getStatusDescription()
+      END IF
+      CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","ClientSendCodeJson","HTTPCode("||resp.getStatusCode()||") : "||str)
+    END IF
+  CATCH
+    CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","ClientSendCodeJson","Connection error code "||status)
   END TRY
   RETURN FALSE,NULL
 END FUNCTION
@@ -231,7 +293,7 @@ FUNCTION ClientSendCodeForBearerToken(idp,redirect,code,client_pub_id,client_sec
     LET resp = req.getResponse()
     IF resp.getStatusCode() == 200 THEN
       LET str = resp.getTextResponse()
-      CALL util.json.parse(str,ret)
+      CALL util.JSON.parse(str,ret)
       IF ret.token_type IS NOT NULL THEN
         IF ret.token_type.equalsIgnoreCase("Bearer") THEN
           RETURN TRUE,ret.*
@@ -245,19 +307,21 @@ FUNCTION ClientSendCodeForBearerToken(idp,redirect,code,client_pub_id,client_sec
       CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","ClientSendCodeForBearerToken","HTTPCode("||resp.getStatusCode()||") : "||str)
     END IF
   CATCH
-    CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","ClientSendCodeForBearerToken","Connection error code "||STATUS)
+    CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","ClientSendCodeForBearerToken","Connection error code "||status)
   END TRY
   INITIALIZE ret TO NULL
   RETURN FALSE,ret.*
 END FUNCTION
 
 FUNCTION CheckTokenValidity(pub_id,idp,token)
+  RETURNS (BOOLEAN, STRING, DYNAMIC ARRAY OF STRING)
   DEFINE pub_id   STRING
   DEFINE idp      IdPManager.IdPType
-  DEFINE token    OpenIDCResponse
+  DEFINE token    OpenIdCResponse
   DEFINE id_token JWT.JWTType
   DEFINE now      DATETIME YEAR TO SECOND
   DEFINE dt       DATETIME YEAR TO SECOND
+  DEFINE tkz      base.StringTokenizer
   # Decode and validate id Token
   CALL JWT.DecodeAndValidateCompactJWT(idp.*,token.id_token) RETURNING id_token.*
   IF id_token.claims.iss IS NULL THEN
@@ -299,12 +363,23 @@ FUNCTION CheckTokenValidity(pub_id,idp,token)
       END IF
     END IF
   END IF
+  IF id_token.claims.scope IS NOT NULL THEN
+    # Manage scope following RFC8693
+    LET tkz = base.StringTokenizer.create(id_token.claims.scope," ")
+    LET id_token.claims.scopes = NULL
+    WHILE tkz.hasMoreTokens()
+      CALL id_token.claims.scopes.appendElement()
+      LET id_token.claims.scopes[id_token.claims.scopes.getLength()] = tkz.nextToken()
+    END WHILE
+    RETURN TRUE, id_token.claims.sub, id_token.claims.scopes    
+  END IF
   IF id_token.claims.scopes.getLength() > 0 THEN
     # Return scope names (aka roles)
     RETURN TRUE, id_token.claims.sub, id_token.claims.scopes
-  ELSE
-    RETURN TRUE, id_token.claims.sub, NULL
   END IF
+  # There are no scopes
+  RETURN TRUE, id_token.claims.sub, NULL
+  
 END FUNCTION
 
 #+
@@ -321,7 +396,7 @@ FUNCTION RetrieveUserInfo(idp,token)
   DEFINE  ret           STRING
   DEFINE  url           STRING
   IF idp.userinfo_endpoint IS NULL THEN
-    CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"OIDConnect","RetrieveUserInfo",idp.issuer||" has no userinfo end point")
+    CALL Logs.LOG_EVENT(Logs.C_LOG_MSG,"OIDConnect","RetrieveUserInfo",idp.Issuer||" has no userinfo end point")
     RETURN FALSE, NULL
   ELSE
     TRY
@@ -351,7 +426,7 @@ FUNCTION RetrieveUserInfo(idp,token)
         RETURN TRUE, NULL
       END IF
     CATCH
-      CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","RetrieveUserInfo","ERROR : "||STATUS)
+      CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","RetrieveUserInfo","ERROR : "||status)
       RETURN FALSE, NULL
     END TRY
   END IF
@@ -370,7 +445,7 @@ FUNCTION UserInfoToAttributes(src)
     LET json = util.JSONObject.parse(src)
     CALL JsonObjectToAttributes(json, attrs)
   CATCH
-    CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","UserInfoToAttributes","ERROR : "||STATUS)
+    CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","UserInfoToAttributes","ERROR : "||status)
   END TRY
   RETURN attrs
 END FUNCTION
@@ -396,8 +471,8 @@ FUNCTION JsonObjectToAttributes(json, attrs)
           IF v IS NOT NULL THEN
             IF v.getLength()>0 THEN
               CALL attrs.appendElement()
-              LET attrs[attrs.getLength()].NAME = n
-              LET attrs[attrs.getLength()].VALUE = v
+              LET attrs[attrs.getLength()].name = n
+              LET attrs[attrs.getLength()].value = v
             END IF
           END IF
 
@@ -406,15 +481,15 @@ FUNCTION JsonObjectToAttributes(json, attrs)
           IF v IS NOT NULL THEN
             IF v.getLength()>0 THEN
               CALL attrs.appendElement()
-              LET attrs[attrs.getLength()].NAME = n
-              LET attrs[attrs.getLength()].VALUE = v
+              LET attrs[attrs.getLength()].name = n
+              LET attrs[attrs.getLength()].value = v
             END IF
           END IF
 
       END CASE
     END FOR
   CATCH
-    CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","JsonObjectToAttributes","ERROR : "||STATUS)
+    CALL Logs.LOG_EVENT(Logs.C_LOG_ERROR,"OIDConnect","JsonObjectToAttributes","ERROR : "||status)
   END TRY
 END FUNCTION
 

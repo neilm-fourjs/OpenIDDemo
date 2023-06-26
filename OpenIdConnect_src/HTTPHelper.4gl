@@ -1,7 +1,7 @@
 #
 # FOURJS_START_COPYRIGHT(U,2015)
 # Property of Four Js*
-# (c) Copyright Four Js 2015, 2019. All Rights Reserved.
+# (c) Copyright Four Js 2015, 2023. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
 # 
@@ -13,7 +13,6 @@
 
 IMPORT com
 IMPORT xml 
-IMPORT util
 
 IMPORT FGL WSHelper
 
@@ -25,6 +24,8 @@ PUBLIC CONSTANT C_X_FOURJS_ENVIRONEMENT_PARAMETER_EXTRA = "X-FourJs-Environment-
 PUBLIC CONSTANT C_X_FOURJS_BOOTSTRAP                    = "X-FourJs-Environment-Parameter-Extra-BOOTSTRAP"
 PUBLIC CONSTANT C_X_FOURJS_FGL_AUTO_LOGOUT_PROMPT_QUERY = "X-FourJs-Environment-FGL_AUTO_LOGOUT_PROMPT_QUERY"
 PUBLIC CONSTANT C_X_FOURJS_FGL_VMPROXY_END_URL          = "X-FourJs-Environment-FGL_VMPROXY_END_URL"
+PUBLIC CONSTANT C_X_FOURJS_FGL_VMPROXY_START_URL        = "X-FourJs-Environment-FGL_VMPROXY_START_URL"
+PUBLIC CONSTANT C_X_FORWARDED_FOR                       = "X-Forwarded-For"
 
 PUBLIC CONSTANT C_GENERO_INTERNAL_DELEGATE              = "_GENERO_INTERNAL_DELEGATE_"
 
@@ -75,6 +76,9 @@ PUBLIC
 CONSTANT C_COOKIE_OIDC          =   "GeneroOIDC"
 
 PUBLIC
+CONSTANT C_COOKIE_LAX           =   "Lax"
+
+PUBLIC
 CONSTANT C_CONTENT_TYPE = "Content-Type"
 
 PUBLIC
@@ -86,7 +90,7 @@ FUNCTION RetrieveQueryIndexByName(query,NAME)
   DEFINE NAME   STRING
   DEFINE ind    INTEGER
   FOR ind = 1 TO query.getLength()
-    IF query[ind].NAME == NAME THEN
+    IF query[ind].name == NAME THEN
       RETURN ind
     END IF
   END FOR
@@ -121,9 +125,9 @@ FUNCTION BuildQueryEncodedURL(url,query)
     LET ret = url
   END IF
   FOR ind=1 TO query.getLength()
-    LET ret = ret || URLEncodeQueryPart(query[ind].NAME)
-    IF query[ind].VALUE IS NOT NULL THEN
-      LET ret = ret || "=" || URLEncodeQueryPart(query[ind].VALUE)
+    LET ret = ret || URLEncodeQueryPart(query[ind].name)
+    IF query[ind].value IS NOT NULL THEN
+      LET ret = ret || "=" || URLEncodeQueryPart(query[ind].value)
     END IF
     IF ind<query.getLength() THEN
       LET ret = ret || "&"
@@ -134,9 +138,13 @@ FUNCTION BuildQueryEncodedURL(url,query)
 END FUNCTION
 
 PUBLIC
-FUNCTION GetErrorPage(code)
-  DEFINE code   INTEGER
-  DEFINE  doc   xml.DomDocument
+FUNCTION GetErrorPage(code, baseURL)
+  DEFINE  code    INTEGER
+  DEFINE  doc     xml.DomDocument
+  DEFINE  baseURL STRING
+  DEFINE  list    xml.DomNodeList
+  DEFINE  node    xml.DomNode
+  DEFINE  css     STRING
   LET doc = xml.DomDocument.Create()
   TRY
     CASE code
@@ -165,9 +173,52 @@ FUNCTION GetErrorPage(code)
       OTHERWISE
         CALL doc.load(base.Application.getResourceEntry("oidc.error.default"))
     END CASE 
+    # Update ccs link with baseURL
+    LET list = doc.selectByXPath("/pre:html/pre:head/pre:link[@type='text/css']","pre","http://www.w3.org/1999/xhtml")
+    IF list.getCount()==1 THEN
+      LET node = list.getItem(1)
+      LET css = node.getAttribute("href")
+      LET css = SFMT("%1%2",baseURL,css)
+      CALL node.setAttribute("href",css)
+    END IF    
     RETURN doc.saveToString()
   CATCH
     RETURN C_HTTP_DefaultBody
   END TRY
 END FUNCTION
   
+PUBLIC FUNCTION RemoveDefaultPortFromURL(url STRING)
+  DEFINE sb base.StringBuffer
+  LET sb = base.StringBuffer.create()
+  CALL sb.append(url)
+  IF sb.getIndexOf("https://",1)==1 THEN
+    CALL sb.replace(":443/","/",1)
+  ELSE
+    IF url.getIndexOf("http://",1)==1 THEN
+      CALL sb.replace(":80/","/",1)
+    END IF
+  END IF
+  RETURN sb.toString()
+END FUNCTION
+
+# Returns the remote IP based on the request
+#  and the oidc.client.check configuration
+#  or NULL if NOT set
+PUBLIC FUNCTION GetRemoteIp(req com.HttpServiceRequest)
+  DEFINE _mode STRING
+  DEFINE tkz   base.StringTokenizer
+  LET _mode = base.Application.getResourceEntry("oidc.client.check")
+  IF _mode IS NULL THEN
+    RETURN NULL
+  ELSE
+    CASE _mode
+      WHEN "Remote-Addr"
+        RETURN req.getRequestHeader(C_X_FOURJS_REMOTE_ADDR)
+      WHEN "X-Forwarded-For"
+        LET tkz = base.StringTokenizer.create(req.getRequestHeader(C_X_FORWARDED_FOR),",")
+        RETURN tkz.nextToken().trim()
+      OTHERWISE
+        RETURN NULL
+    END CASE
+  END IF
+END FUNCTION

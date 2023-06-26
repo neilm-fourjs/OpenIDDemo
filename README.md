@@ -7,7 +7,7 @@ The Programs:
 * test_OpenIdLogin - a test program to test the OpenIdLogin program
 
 The Service:
-* njmOpenIDConnect - Based on the default Genero example OpenIDConnectProvide
+* njmOpenIDConnect - Based on the default Genero example OpenIDConnectProvider
 
 # Google
 
@@ -20,11 +20,20 @@ export FGLPROFILE=../res/fglprofile
 
 cd OpenIdConnect_bin
 
-fglrun ImportOAuth.42r -list
+fglrun ImportOAuth --list
 
+# Old
 fglrun ImportOAuth -import https://accounts.google.com -authz https://accounts.google.com/o/oauth2/v2/auth -token https://oauth2.googleapis.com/token -profile https://openidconnect.googleapis.com/v1/userinfo
-
 fglrun ImportOAuth -import https://test-api.service.hmrc.gov.uk -authz https://test-api.service.hmrc.gov.uk/oauth/authorize -token https://test-api.service.hmrc.gov.uk/oauth/token
 
-fglrun ImportOAuth.42r -list
+# New 4.01 using default openid-connect
+cd $FGLDIR/web_utilities/services/openid-connect
+. envoidc.sh
+cd bin
+$fglrun ImportOAuth --import --authz https://accounts.google.com/o/oauth2/v2/auth --token https://oauth2.googleapis.com/token --profile https://openidconnect.googleapis.com/v1/userinfo https://accounts.google.com
+
+$ fglrun ImportOAuth --list
+Listing identity providers:
+  #1(OAuth2) : https://accounts.google.com
+Done...
 

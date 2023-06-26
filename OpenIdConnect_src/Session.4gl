@@ -1,7 +1,7 @@
 #
 # FOURJS_START_COPYRIGHT(U,2017)
 # Property of Four Js*
-# (c) Copyright Four Js 2017, 2019. All Rights Reserved.
+# (c) Copyright Four Js 2017, 2023. All Rights Reserved.
 # * Trademark of Four Js Development Tools Europe Ltd
 #   in the United States and elsewhere
 # 
@@ -11,39 +11,35 @@
 # FOURJS_END_COPYRIGHT
 #
 
-IMPORT com
-IMPORT xml
 IMPORT security
 IMPORT FGL Logs
-IMPORT FGL HTTPHelper
-IMPORT FGL RelayState
-IMPORT FGL OIDConnect
-IMPORT FGL IdPManager
-IMPORT FGL Utils
 
 PRIVATE
 CONSTANT C_SESSION_VALIDITY      = INTERVAL (5) DAY TO DAY # Session validity time
 CONSTANT C_INIT_SESSION_VALIDITY = INTERVAL (3) MINUTE TO MINUTE
 
+PUBLIC 
+TYPE URLType VARCHAR(2048)
+
+TYPE UUIDType VARCHAR(36)
+
 PUBLIC
 TYPE SessionType RECORD
-    uuid            VARCHAR(36),
+    uuid            UUIDType,
     provider_id     INTEGER,
-    url             VARCHAR(255),
+    url             URLType,
     pub_id          VARCHAR(255),
     secret_id       VARCHAR(255),
     scope           VARCHAR(255),
     authz           VARCHAR(255),
     sign_off        VARCHAR(255),
-    end_url         VARCHAR(255),
+    end_url         URLType,
     subject         VARCHAR(255),
     id_token        TEXT,
     session         VARCHAR(255),
-    idp_logout_url  VARCHAR(255),
+    idp_logout_url  URLType,
     expires         DATETIME YEAR TO SECOND
 END RECORD
-
-TYPE UUIDType VARCHAR(36)
 
 
 #+
@@ -55,14 +51,14 @@ FUNCTION CreateUUID(p_idp_id, p_path, p_pub_id, p_sec_id, p_scope, p_authz, p_si
   DEFINE ret SessionType
 
   DEFINE  p_idp_id      INTEGER
-  DEFINE  p_path        VARCHAR(255)
+  DEFINE  p_path        URLType
   DEFINE  p_pub_id      VARCHAR(255)
   DEFINE  p_sec_id      VARCHAR(255)
   DEFINE  p_scope       VARCHAR(255)
   DEFINE  p_authz       VARCHAR(255)
   DEFINE  p_sign_off    VARCHAR(255)
-  DEFINE  p_end_url     VARCHAR(255)
-  DEFINE  p_logout_url  VARCHAR(255)
+  DEFINE  p_end_url     URLType
+  DEFINE  p_logout_url  URLType
 
   LET ret.uuid = security.RandomGenerator.CreateUUIDString()
   LET ret.provider_id = p_idp_id
