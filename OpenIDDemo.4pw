@@ -133,8 +133,8 @@
       <File filePath="OpenIdConnect_src/JWK.4gl"/>
       <File filePath="OpenIdConnect_src/JWT.4gl"/>
       <File filePath="OpenIdConnect_src/OIDConnect.4gl"/>
+      <File filePath="OpenIdConnect_src/OpenIDConnectServer.4gl"/>
       <File filePath="OpenIdConnect_src/RelayState.4gl"/>
-      <File filePath="OpenIdConnect_src/Server.4gl"/>
       <File filePath="OpenIdConnect_src/Session.4gl"/>
       <File filePath="OpenIdConnect_src/SPManager.4gl"/>
       <File filePath="OpenIdConnect_src/Utils.4gl"/>
@@ -176,7 +176,7 @@
       <File filePath="OpenIdLogin_src/OpenIdLogin.xcf"/>
     </Library>
     <Application binaryName="OpenIdLogin" dependencies="-102635928,-1631299012" environment="value:FGLIMAGEPATH=../OpenIdLogin_src" id="-262077376" label="OpenIdLogin" language="Genero">
-      <Configuration id="307369959" label="OpenIdLogin"/>
+      <Configuration commandLineArguments="njmdemo" id="307369959" label="OpenIdLogin"/>
       <File filePath="OpenIdLogin_src/OpenIdLogin.4gl"/>
       <File filePath="OpenIdLogin_src/OpenIdLogin.inc"/>
       <File filePath="OpenIdLogin_src/OpenIdLogin.per"/>
